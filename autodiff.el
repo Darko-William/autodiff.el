@@ -317,38 +317,7 @@
 
 (rdiff '(("inp" 0) ("inp" 1) ("inp" 2) ("mul" (0 1)) ("sub" (2) 3) ("add" (3 4)) ("expt" (5) 3) ("div" (6 1))) 1 2 3)
 
-;; TODO: implement prefix and pullback functions for dot product in rdiff
 (rdiff '(("inp" 0) ("inp" 1) ("inp" 2) ("dot" (0 1 2) (242 2 52.05))) 1 2 3)
 
 (rdiff '(("inp" 0) ("inp" 1) ("inp" 2) ("smax" (0 1 2) 0) ("smax" (0 1 2) 1) ("smax" (0 1 2) 2) ("xent" (3 4 5) (1 0 0))) 1 2 3)
 
-;; Vector-based reverse auto-diff
-(setq vector-graph
-      '(("inp" 0)
-	("inp" 1)
-	("add" (0 1))))
-
-(defun dot (A B)
-  "Crude dot product of vectors in the form of a lisp list '()"
-  (let ((count 0)
-	(sum 0))
-    (dolist (a A)
-      (setq sum (+ sum (* a (nth count B))))
-      (setq count (1+ count)))
-    sum))
-	    
-;; (defun rdiff* (function &rest xs)
-;;   "Vectorized reverse-mode autodiff with forward pass loop and then a backward pass with corresponding pullback functions for a computational graph representation of a function as input"
-;;   (let ((dag '())
-;; 	(inputs  (mapcar (lambda (x) (mapcar 'float x)) xs)))
-;;     (dolist (node function)
-;;       (cond ((equal (car node) "inp") (setq dag (cons (nth (nth 1 node) inputs) dag)))
-;; 	    ((equal (car node) "add") (setq dag (cons (apply 'seq-mapn '+ (or (nth 2 node) '(0 0)) (mapcar (lambda (x) (or (nth x (reverse dag)) '(0 0))) (nth 1 node))) dag)))
-;; 	    ((equal (car node) "sub") (setq dag (cons (apply 'seq-mapn '- (append (mapcar (lambda (x) (nth x (reverse dag))) (nth 1 node)) (list (or (nth 2 node) '(0 0))))) dag)))
-;; 	    ((equal (car node) "mul") (setq dag (cons (apply 'seq-mapn '* (or (nth 2 node) '(1 1)) (mapcar (lambda (x) (nth x (reverse dag))) (nth 1 node))) dag)))
-;; 	    ((equal (car node) "div") (setq dag (cons (apply 'seq-mapn '/ (append (mapcar (lambda (x) (nth x (reverse dag))) (nth 1 node)) (list (or (nth 2 node) '(1 1))))) dag)))))
-;;     (let ((grad (make-list (length function) '()))
-;; 	  (graph (reverse function)))
-;;       (dotimes (i (- (length graph) (length inputs)))
-;; 	(cond (equal (car (nth i graph)) "add") (setq grad (seq-map-indexed (lambda (elem ind)
-;; 									      (if (member ind (nth 1 (nth 
